@@ -1,8 +1,8 @@
 from .rpc_client import RPCClient
 
-class MathStub:
-    def __init__(self):
-        self.client = RPCClient("math_service") # localizacao do servico
-
-    def add(self, a, b):
-        return self.client.call("add", a, b) # chama o metodo do servico
+class Stub:
+    def __getattr__(self, method_name):
+        def remote_call(*args):
+            client = RPCClient(method_name)
+            return client.call(*args)
+        return remote_call

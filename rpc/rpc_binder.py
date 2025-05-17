@@ -12,28 +12,25 @@ class Binder:
             data = conn.recv(1024).decode()
             parts = data.split("|")
             if parts[0] == "REGISTER":
-                _, name, ip, port = parts
-                self.services[name] = (ip, int(port))
+                _, method_name, ip, port = parts
+                self.services[method_name] = (ip, int(port))
                 conn.send(b"OK")
             elif parts[0] == "LOOKUP":
-                _, name = parts
-                result = self.services.get(name)
+                _, method_name = parts
+                result = self.services.get(method_name)
                 if result:
                     conn.send(f"{result[0]}|{result[1]}".encode())
                 else:
                     conn.send(b"NOT_FOUND")
 
     def start_binder(self):
-        # Cria o socket para escutar conexoes
         s = socket.socket()
         s.bind((self.host, self.port))
         s.listen()
         print(f"[Binder] Escutando em {self.host}:{self.port}")
-        # Atende conexoes em uma nova thread
         while True:
             conn, _ = s.accept()
             Thread(target=self.handle_client, args=(conn,)).start()
-
 
 if __name__ == "__main__":
     binder = Binder()
