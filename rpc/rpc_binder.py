@@ -23,6 +23,7 @@ class Binder:
                 if result:
                     conn.send(f"{result[0]}|{result[1]}".encode())
                 else:
+                    print(f"[Binder] Método '{method_name}' nao encontrado")
                     conn.send(b"NOT_FOUND")
 
     def start_binder(self):

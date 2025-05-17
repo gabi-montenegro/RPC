@@ -14,7 +14,7 @@ class RPCClient:
             s.send(f"LOOKUP|{self.method_name}".encode())
             data = s.recv(1024).decode()
             if data == "NOT_FOUND":
-                raise Exception(f"Método '{self.method_name}' não encontrado")
+                raise Exception(f"[RPC Client] Método '{self.method_name}' não encontrado")
             ip, port = data.split("|")
             return (ip, int(port))
 

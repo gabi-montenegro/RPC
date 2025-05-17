@@ -4,19 +4,22 @@ from interface.math_service import MathService
 
 if __name__ == "__main__":
     service = MathService()
+    base_port = 5000
 
-    method_ports = {
-        "add": 5000,
-        "sub": 5001,
-        "mul": 5002,
-    }
+    # method_ports = {
+    #     "add": 5000,
+    #     "sub": 5001,
+    #     "mul": 5002,
+    # }
+    methods = [method for method in dir(service) if not method.startswith("_") and callable(getattr(service, method))]
 
     threads = []
     servers = []
 
     
 
-    for method, port in method_ports.items():
+    for i, method in enumerate(methods):
+        port = base_port + i
         server = RPCServer(method, service, port=port)
         servers.append(server)
         t = Thread(target=server.serve, daemon=True)  # roda em thread daemon
