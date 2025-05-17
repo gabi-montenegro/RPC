@@ -6,6 +6,8 @@ class Binder:
         self.services = {}
         self.host = host
         self.port = port
+        self.socket = None
+        self.running = True
 
     def handle_client(self, conn):
         with conn:
@@ -24,14 +26,34 @@ class Binder:
                     conn.send(b"NOT_FOUND")
 
     def start_binder(self):
-        s = socket.socket()
-        s.bind((self.host, self.port))
-        s.listen()
+        self.socket = socket.socket()
+        self.socket.bind((self.host, self.port))
+        self.socket.listen()
         print(f"[Binder] Escutando em {self.host}:{self.port}")
-        while True:
-            conn, _ = s.accept()
-            Thread(target=self.handle_client, args=(conn,)).start()
+        while self.running:
+            try:
+                conn, _ = self.socket.accept()
+                Thread(target=self.handle_client, args=(conn,), daemon=True).start()
+            except OSError:
+                break  # Socket fechado
+
+    def stop(self):
+        self.running = False
+        if self.socket:
+            self.socket.close()
+            print("[Binder] Encerrado.")
 
 if __name__ == "__main__":
     binder = Binder()
-    binder.start_binder()
+    t = Thread(target=binder.start_binder, daemon=True)
+    t.start()
+
+    print("[Binder] Digite \SAIR para encerrar o servidor.")
+    try:
+        while True:
+            cmd = input()
+            if cmd.strip() == "\SAIR":
+                binder.stop()
+                break
+    except KeyboardInterrupt:
+        binder.stop()

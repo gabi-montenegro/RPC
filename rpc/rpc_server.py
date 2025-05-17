@@ -10,26 +10,42 @@ class RPCServer:
         self.host = host
         self.port = port
         self.binder = (binder_host, binder_port)
+        self.socket = None
 
     def handle_client(self, conn):
         with conn:
-            data = conn.recv(4096)
-            args = deserialize(data)
-            result = getattr(self.method_impl, self.method_name)(*args)
-            conn.send(serialize(result))
+            try:
+                data = conn.recv(4096)
+                args = deserialize(data)
+                method = getattr(self.method_impl, self.method_name)
+                result = method(*args)
+                conn.send(serialize(result))
+            except Exception as e:
+                print(f"[RPCServer] Erro ao processar chamada: {e}")
+                conn.send(serialize({"error": str(e)}))
+
 
     def serve(self):
         # Registra no binder
-        with socket.socket() as b:
-            b.connect(self.binder)
-            b.send(f"REGISTER|{self.method_name}|{self.host}|{self.port}".encode())
-            print(f"[RPCServer] Registrado '{self.method_name}' no binder")
+        try:
+            with socket.socket() as b:
+                b.connect(self.binder)
+                b.send(f"REGISTER|{self.method_name}|{self.host}|{self.port}".encode())
+                print(f"[RPCServer] Registrado '{self.method_name}' no binder")
+        except ConnectionRefusedError:
+            print(f"[RPCServer] ERRO: Não foi possível conectar ao binder em {self.binder[0]}:{self.binder[1]}")
+            return
 
         # Cria socket para escutar chamadas
-        s = socket.socket()
-        s.bind((self.host, self.port))
-        s.listen()
+        self.socket = socket.socket()
+        self.socket.bind((self.host, self.port))
+        self.socket.listen()
         print(f"[RPCServer] Método '{self.method_name}' escutando em {self.host}:{self.port}")
         while True:
-            conn, _ = s.accept()
+            conn, _ = self.socket.accept()
             Thread(target=self.handle_client, args=(conn,)).start()
+
+    def close(self):
+        if self.socket:
+            print(f"[RPCServer] Fechando socket para o método '{self.method_name}'")
+            self.socket.close()

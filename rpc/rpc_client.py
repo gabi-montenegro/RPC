@@ -19,8 +19,13 @@ class RPCClient:
             return (ip, int(port))
 
     def call(self, *args):
-        with socket.socket() as s:
-            s.connect(self.service_addr)
-            s.send(serialize(args))
-            result = s.recv(4096)
-            return deserialize(result)
+        s = socket.socket()
+        s.connect(self.service_addr)
+        s.send(serialize(args))
+        result = s.recv(4096)
+        response = deserialize(result)
+
+        if isinstance(response, dict) and "error" in response:
+            raise RuntimeError(f"[RPCClient] Erro do servidor: {response['error']}")
+
+        return response
