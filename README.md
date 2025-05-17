@@ -16,6 +16,7 @@ O sistema é composto por:
 ---
 
 ## Estrutura do Projeto
+```
 RPC/
 ├── examples/
 │ ├── server_example.py # Exemplo de servidor com múltiplos métodos
@@ -28,7 +29,7 @@ RPC/
 │ ├── rpc_client.py # Classe do cliente RPC
 │ ├── rpc_stub_generator.py # Stub dinâmico
 │ └── serializer.py # Serialização e desserialização com pickle
-
+```
 
 ## Como executar
 
