@@ -22,7 +22,7 @@ RPC/
 │ ├── server_example.py # Exemplo de servidor com múltiplos métodos
 │ └── client_example.py # Exemplo de cliente usando o stub
 ├── interface/
-│ └── math_service.py # Implementação dos métodos 'add', 'sub', 'mul', 'div'
+│ └── math_service.py # Implementação dos métodos 'add', 'sub', 'multiply', 'divide'
 ├── rpc/
 │ ├── binder.py # Servidor central que registra e resolve serviços
 │ ├── rpc_server.py # Classe do servidor RPC
