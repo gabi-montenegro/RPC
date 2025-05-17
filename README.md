@@ -98,9 +98,9 @@ def multiply(self, a, b):
     return a * b
 ```
 
-3. Para utilizar o serviço no cliente, basta acessá-lo com `math_stub.mul(1,4)` no arquivo `examples/client_example.py`.
+3. Para utilizar o serviço no cliente, basta acessá-lo com `math_stub.multiply(4,2)` no arquivo `examples/client_example.py`.
 ```python
-print("Resultado de 1 * 4:", math_stub.sub(1, 4))
+print("Resultado de 1 * 4:", math_stub.multiply(4, 2))
 ```
 
 4. Execute todos os servidores conforme no tópico "Como executar".
