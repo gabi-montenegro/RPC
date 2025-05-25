@@ -68,7 +68,7 @@ export SERVICES_HOST=<IP>
 
 ## Exemplo de execução
 
-Com todos os métodos implementados e registrados (add, multiply, sub e divide) e com o seguinte bloco de execução no cliente (`examples/client_example.py`) que instancia o stub e acessa os métodos:
+1. Com todos os métodos implementados e registrados (add, multiply, sub e divide) e com o seguinte bloco de execução no cliente (`examples/client_example.py`) que instancia o stub e acessa os métodos:
 ```python
 from rpc.stub_client import Calculator
 
@@ -82,7 +82,7 @@ if __name__ == "__main__":
 
 ```
 
-Executa-se o servidor do binder e os servidor RPC.
+2. Executa-se o servidor do binder e os servidor RPC.
 ```bash
 python rpc/rpc_binder.py
 ```
