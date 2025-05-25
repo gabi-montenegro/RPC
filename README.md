@@ -171,4 +171,5 @@ Gera a saída ao cliente:
 AttributeError: Método 'adds' não existe na interface. Use: divide, add, sub, multiply
 ```
 
+![](./image(5).png)
 
