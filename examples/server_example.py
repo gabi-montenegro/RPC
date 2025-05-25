@@ -1,42 +1,51 @@
-from threading import Thread
-from rpc.rpc_server import RPCServer
-from interface.math_service import MathService
+from rpc.stub_server import ServerStub
+import time
+
+class MethodsService:
+    def add(self, a, b):
+        if not isinstance(a, int) or not isinstance(b, int):
+            raise ValueError("Argumentos de 'add' devem ser inteiros")
+        return a + b
+
+    def sub(self, a, b):
+        if not isinstance(a, int) or not isinstance(b, int):
+            raise ValueError("Argumentos de 'sub' devem ser inteiros")
+        return a - b
+
+    def multiply(self, a, b):
+        if not isinstance(a, int) or not isinstance(b, int):
+            raise ValueError("Argumentos de 'multiply' devem ser inteiros")
+        return a * b
+
+    def divide(self, a, b):
+        if not isinstance(a, int) or not isinstance(b, int):
+            raise ValueError("Argumentos de 'divide' devem ser inteiros")
+        if b == 0:
+            raise ValueError("Divisão por zero não é permitida")
+        return a / b
+
+
+class MathRPCServer:
+    def __init__(self):
+        self.server = ServerStub()
+        self.service = MethodsService()
+
+    def start(self):
+        print("[Server] Servidor RPC rodando. Pressione Ctrl+C para sair.")
+        # Registrar métodos válidos da instância de serviço
+        self.server.register(self.service.add)
+        self.server.register(self.service.sub)
+        self.server.register(self.service.multiply)
+        self.server.register(self.service.divide)
+
+        try:
+            while True:
+                pass
+        except KeyboardInterrupt:
+            print("\n[Server] Encerrando servidor.")
+            self.server.stop()
+
 
 if __name__ == "__main__":
-    service = MathService()
-    base_port = 5000
-
-    # method_ports = {
-    #     "add": 5000,
-    #     "sub": 5001,
-    #     "mul": 5002,
-    # }
-    methods = [method for method in dir(service) if not method.startswith("_") and callable(getattr(service, method))]
-
-    threads = []
-    servers = []
-
-    
-
-    for i, method in enumerate(methods):
-        port = base_port + i
-        server = RPCServer(method, service, port=port)
-        servers.append(server)
-        t = Thread(target=server.serve, daemon=True)  # roda em thread daemon
-        t.start()
-        threads.append(t)
-        print(f"[Main] Servidor para '{method}' iniciado na porta {port}")
-
-    print("[Main] Digite \SAIR para encerrar os servidores.")
-    try:
-        while True:
-            cmd = input()
-            if cmd.strip().upper() == "\SAIR":
-                print("[Main] Encerrando servidores...")
-                for s in servers:
-                    s.close()  # certifique-se de que RPCServer tenha um método close()
-                break
-    except KeyboardInterrupt:
-        print("[Main] Encerrando servidores...")
-        for s in servers:
-            s.close()
+    rpc_server = MathRPCServer()
+    rpc_server.start()

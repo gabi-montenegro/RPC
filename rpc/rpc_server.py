@@ -1,51 +1,59 @@
+# rpc_server.py
 import socket
 from threading import Thread
-from rpc.serializer import serialize, deserialize 
-
+from .serializer import serialize, deserialize
+import os
 
 class RPCServer:
-    def __init__(self, method_name, method_impl, host="localhost", port=5000, binder_host="localhost", binder_port=9000):
-        self.method_name = method_name
-        self.method_impl = method_impl
-        self.host = host
-        self.port = port
+    def __init__(self, binder_host="localhost", binder_port=9000):
         self.binder = (binder_host, binder_port)
-        self.socket = None
+        self.servers = {}  # chave: porta, valor: socket
+        self.services_host = os.getenv("SERVICES_HOST", "localhost")
 
-    def handle_client(self, conn):
-        with conn:
-            try:
-                data = conn.recv(4096)
-                args = deserialize(data)
-                method = getattr(self.method_impl, self.method_name)
-                result = method(*args)
-                conn.send(serialize(result))
-            except Exception as e:
-                print(f"[RPCServer] Erro ao processar chamada: {e}")
-                conn.send(serialize({"error": str(e)}))
-
-
-    def serve(self):
-        # Registra no binder
+    def register(self, name, ip, port):
         try:
-            with socket.socket() as b:
-                b.connect(self.binder)
-                b.send(f"REGISTER|{self.method_name}|{self.host}|{self.port}".encode())
-                print(f"[RPCServer] Registrado '{self.method_name}' no binder")
-        except ConnectionRefusedError:
-            print(f"[RPCServer] ERRO: Não foi possível conectar ao binder em {self.binder[0]}:{self.binder[1]}")
-            return
+            with socket.socket() as s:
+                s.connect(self.binder)
+                s.send(f"REGISTER|{name}|{ip}|{port}".encode())
+                response = s.recv(1024).decode()
+                return response == "OK"
+        except (ConnectionRefusedError, OSError):
+            print(f"[ERRO] Não foi possível conectar ao Binder em {self.binder[0]}:{self.binder[1]}")
+            return False
 
-        # Cria socket para escutar chamadas
-        self.socket = socket.socket()
-        self.socket.bind((self.host, self.port))
-        self.socket.listen()
-        print(f"[RPCServer] Método '{self.method_name}' escutando em {self.host}:{self.port}")
+    def handle_client(self, port, func):
+        def client_handler(conn):
+            with conn:
+                try:
+                    data = conn.recv(4096)
+                    if not data:
+                        return
+                    args = deserialize(data)
+                    result = func(*args)
+                    conn.send(serialize(result))
+                except Exception as e:
+                    # print(f"[Server] Erro ao processar chamada: {e}")
+                    conn.send(serialize({"error": str(e)}))
+
+        s = socket.socket()
+        s.bind((self.services_host, port))
+        s.listen()
+        self.servers[port] = s
+        print(f"[Server] Método '{func.__name__}' escutando em  {self.services_host}:{port}")
+
         while True:
-            conn, _ = self.socket.accept()
-            Thread(target=self.handle_client, args=(conn,)).start()
+            try:
+                conn, _ = s.accept()
+                Thread(target=client_handler, args=(conn,), daemon=True).start()
+            except OSError:
+                # Socket foi fechado
+                break
 
-    def close(self):
-        if self.socket:
-            print(f"[RPCServer] Fechando socket para o método '{self.method_name}'")
-            self.socket.close()
+    def stop(self):
+        print("[Server] Encerrando todos os sockets...")
+        for port, sock in self.servers.items():
+            try:
+                sock.close()
+                print(f"[Server] Socket da porta {port} fechado.")
+            except Exception as e:
+                print(f"[ERRO] Ao fechar socket da porta {port}: {e}")
