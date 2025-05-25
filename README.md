@@ -154,7 +154,7 @@ Gera a saída ao cliente:
 RuntimeError: Erro: Argumentos de 'add' devem ser inteiros
 ```
 
-![](image_4.png)
+![](./image(4).png)
 
 
 ## Validação de métodos
@@ -171,5 +171,5 @@ Gera a saída ao cliente:
 AttributeError: Método 'adds' não existe na interface. Use: divide, add, sub, multiply
 ```
 
-![](image_3.png)
+![](./image(3).png)
 
