@@ -102,7 +102,7 @@ python examples/client_example.py
 ![](./image(2).png)
 
 
-## Inserção de novos serviços à biblioteca MathService
+## Inserção de novos serviços
 
 1. Declare a assinatura do método do serviço na interface - classe `MathService` (arquivo `interface/math_service.py`) -  com os argumentos necessários. No exemplo, foi utilizado a inclusão do serviço de multiplicação.
 
